@@ -758,6 +758,23 @@ void app_main(void) {
     
     init_nvs();
     init_led();
+
+#ifdef CONFIG_OEPL_HARDWARE_PROFILE_XIAO_C6
+    // XIAO ESP32C6: activate external UFL antenna via RF switch
+    // GPIO3 = RF switch power (active-low), GPIO14 = antenna select (high=external)
+    // These are internal MCU pins, not exposed on the standard XIAO header
+    gpio_config_t ant_cfg = {
+        .pin_bit_mask = (1ULL << GPIO_NUM_3) | (1ULL << GPIO_NUM_14),
+        .mode         = GPIO_MODE_OUTPUT,
+        .pull_up_en   = GPIO_PULLUP_DISABLE,
+        .pull_down_en = GPIO_PULLDOWN_DISABLE,
+        .intr_type    = GPIO_INTR_DISABLE,
+    };
+    gpio_config(&ant_cfg);
+    gpio_set_level(GPIO_NUM_3, 0);   // enable RF switch power (active-low)
+    gpio_set_level(GPIO_NUM_14, 1);  // select external UFL antenna
+#endif
+
     init_second_uart();
 
     requestedData.blockId = 0xFF;

@@ -22,6 +22,17 @@ menu "OEPL config"
     config OEPL_HARDWARE_PROFILE_ELECROW_C6
       bool "ELECROW-C6-AP"
 
+    config OEPL_HARDWARE_PROFILE_XIAO_C6
+      bool "Seeed XIAO ESP32C6"
+      help
+        Seeed Studio XIAO ESP32C6 with external UFL antenna.
+        UART: TX=GPIO16 (D6), RX=GPIO17 (D7).
+        External antenna is activated via GPIO3 (RF switch power, active-low)
+        and GPIO14 (antenna select, high=external UFL).
+        No CC1101 - uses built-in 802.15.4 radio only.
+        Connect to XIAO ESP32S3 Plus: S3-D6(GPIO43)->C6-D7, S3-D7(GPIO44)<-C6-D6.
+        Power: connect S3 5V-pin to C6 5V-pin (USB-C only on S3!).
+
   endchoice
 
   config OEPL_HARDWARE_UART_TX
@@ -35,12 +46,12 @@ menu "OEPL config"
     default 2
 
   config OEPL_HARDWARE_UART_TX
-    depends on OEPL_HARDWARE_PROFILE_4inch
+    depends on OEPL_HARDWARE_PROFILE_4inch || OEPL_HARDWARE_PROFILE_XIAO_C6
     int "GPIO - UART TX"
     default 16
 
   config OEPL_HARDWARE_UART_RX
-    depends on OEPL_HARDWARE_PROFILE_4inch
+    depends on OEPL_HARDWARE_PROFILE_4inch || OEPL_HARDWARE_PROFILE_XIAO_C6
     int "GPIO - UART RX"
     default 17
 

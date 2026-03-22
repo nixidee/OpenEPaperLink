@@ -5,6 +5,63 @@ This is an alternative firmware and protocol for the multiple Electronic Shelf L
 The software in this project consists of two parts: Accesspoint-firmware and Tag firmware.
 Additionally, there are various hardware designs for accesspoints and flasher-interfaces to program the tags, preferably using programming jigs
 
+Xiao Seeed Studio Setup:
+
+S3 Plus Pin	→	C6 Pin
+D6 (GPIO43) TX	→	D7 (GPIO17, RX)
+D7 (GPIO44) RX	→	D6 (GPIO16, TX)
+D1 (GPIO2)	→	BOOT (pad)
+D2 (GPIO3)	→	RST (pad)
+5V	→	5V
+GND	→	GND
+
+reset pin highly recommended (to synchronize C6 at start up), the boot pin enables us to use the webinterface for firmware updates of the C6.
+
+1. install Docker:
+
+https://www.docker.com/products/docker-desktop/
+
+2. build C6 firmware:
+
+cd ... /OpenEPaperLink/ARM_Tag_FW/OpenEPaperLink_esp32_C6_AP
+
+docker run --rm \
+  -v $(pwd):/project \
+  -w /project \
+  -e IDF_TARGET=esp32c6 \
+  espressif/idf:latest \
+  idf.py build
+
+we get:
+
+build/OpenEPaperLink_esp32_C6.bin    //firmware
+build/bootloader/bootloader.bin
+build/partition_table/partition-table.bin
+
+3. flash these files with esptool:
+(pip install esptool)
+
+esptool.py --chip esp32c6 --port /dev/cu.usbmodem* \
+  write_flash \
+  0x0 build/bootloader/bootloader.bin \
+  0x8000 build/partition_table/partition-table.bin \
+  0x10000 build/OpenEPaperLink_esp32_C6.bin
+
+4. flash the ESP32 S3:
+cd ... /OpenEPaperLink/ESP32_AP-Flasher
+
+# compile firmware
+pio run -e XIAO_S3_PLUS_C6
+
+# compile filesystem for webserver:
+pio run -t buildfs -e XIAO_S3_PLUS_C6
+
+# flash both:
+pio run -t upload -e XIAO_S3_PLUS_C6
+pio run -t uploadfs -e XIAO_S3_PLUS_C6
+
+connect to AP and visit http://192.168.4.1/setup
+
 >[!Note]
 >Please refer to the [Wiki](https://github.com/jjwbruijn/OpenEPaperLink/wiki) for the latest information.
 >
